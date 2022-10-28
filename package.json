@@ -9,5 +9,9 @@
   },
   "devDependencies": {
     "nuxt": "3.0.0-rc.12"
+  },
+  "dependencies": {
+    "bootstrap": "^5.2.2",
+    "yup": "^0.32.11"
   }
 }
