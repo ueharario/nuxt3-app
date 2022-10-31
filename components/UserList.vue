@@ -15,7 +15,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in _users" :key="user.id">
+        <tr v-for="user in users" v-bind:key="user.id">
           <td class="col-md-5 align-middle">{{ user.name }}</td>
           <td class="col-md-5 align-middle">{{ getGenderLabel(user.gender) }}</td>
           <td class="col-md-1">
@@ -37,6 +37,8 @@
 <script>
 import UserForm from '@/components/UserForm.vue'
 import { TITLE, GENDER_ARRAY } from '@/constants/USER.js'
+import { ApiGetUser } from '@/api/api.js'
+import IssueId from '@/utils/IssueId.js'
 
 export default {
   data() {
@@ -44,47 +46,41 @@ export default {
       TITLE,
       user: {},
       isShow: false,
-      isEdit: true
+      isEdit: true,
+      users: []
     }
   },
   components: {
     UserForm
   },
-  computed: {
-    // _users: {
-    //   get() {
-    //     return Array.from(this.$store.getters['UserApi/_users'])
-    //   },
-    //   set(value) {
-    //     this.$store.commit('UserApi/_users', value)
-    //   }
-    // }
+  async mounted() {
+    const { Users } = await ApiGetUser()
+    this.users = Users
   },
-  // async created() {
-  //   await this.$store.dispatch('UserApi/fetchUser')
-  // },
   methods: {
-  //   /**
-  //    * 新規作成を行います。
-  //    * @param {object} user 登録するユーザです。
-  //    */
-  //   createUser(user) {
-  //     this.$store.dispatch('UserApi/createUser', user)
-  //   },
-  //   /**
-  //    * 編集を行います。
-  //    * @param {object} user 更新するユーザです。
-  //    */
-  //   updateUser(user) {
-  //     this.$store.dispatch('UserApi/updateUser', user)
-  //   },
-  //   /**
-  //    * 削除を行います。
-  //    * @param {object} user 削除するユーザです。
-  //    */
-  //   deleteUser(user) {
-  //     this.$store.dispatch('UserApi/deleteUser', user)
-  //   },
+    /**
+     * 新規作成を行います。
+     * @param {object} user 登録するユーザです。
+     */
+    createUser(user) {
+      user.id = IssueId(this.users, user)
+      this.users.push(user)
+    },
+    /**
+     * 編集を行います。
+     * @param {object} user 更新するユーザです。
+     */
+    updateUser(user) {
+      this.users = this.users.filter((v) => v.id !== user.id)
+      this.users.push(user)
+    },
+    /**
+     * 削除を行います。
+     * @param {object} user 削除するユーザです。
+     */
+    deleteUser(id) {
+      this.users = this.users.filter((v) => v.id !== id)
+    },
     /**
      * 新規作成モードです。
      */
@@ -98,7 +94,7 @@ export default {
      */
     update(id) {
       this.isEdit = true
-      this.user = this._users.find((v) => v.id === id)
+      this.user = this.users.find((v) => v.id === id)
       this.openUserForm()
     },
     /**
@@ -128,7 +124,7 @@ export default {
      * user を id 順に並び替えます。
      */
     sortUser() {
-      this._users.sort((prev, nxt) => prev.id - nxt.id)
+      this.users.sort((prev, nxt) => prev.id - nxt.id)
     }
   }
 }
